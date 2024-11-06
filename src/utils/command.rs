@@ -1,6 +1,6 @@
 use std::process::Command;
 
-// 获取git commit id
+// git commit id
 pub fn get_commit_id() -> String {
     let output = Command::new("git")
         .args(&["rev-parse", "HEAD"])
@@ -11,7 +11,7 @@ pub fn get_commit_id() -> String {
     commit_id.chars().take(7).collect()
 }
 
-// 获取git tag
+// git tag
 pub fn get_tag() -> String {
     let output = Command::new("git")
         .args(&["describe", "--tags"])

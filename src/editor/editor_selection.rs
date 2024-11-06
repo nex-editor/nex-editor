@@ -1,10 +1,7 @@
 #[derive(Debug)]
 pub struct EditorSelection {
-    // 起始位置
     start: u32,
-    // 结束位置
     end: u32,
-    // 当前位置
     cursor: u32,
 }
 

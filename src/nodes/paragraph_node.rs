@@ -21,13 +21,13 @@ pub fn append_paragraph_node(editor_state: &mut EditorState) {
     let root_node = editor_state.get_root_node();
     let last = root_node.get_last();
     match last {
-        Some(last) => {}
+        Some(last) => {
+            todo!("TODO")
+        }
         None => {
-            // 创建一个段落节点
             let paragraph_node = create_paragraph_node();
             let paragraph_node_key = generate_node_key();
 
-            // 设置根节点的first和last
             root_node.set_first(Some(paragraph_node_key));
             root_node.set_last(Some(paragraph_node_key));
             editor_state.insert_node(paragraph_node_key, paragraph_node);
