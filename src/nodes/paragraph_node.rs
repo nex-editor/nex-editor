@@ -21,7 +21,7 @@ pub fn append_paragraph_node(editor_state: &mut EditorState) {
     let root_node = editor_state.get_root_node();
     let last = root_node.get_last();
     match last {
-        Some(last) => {
+        Some(_last) => {
             todo!("TODO")
         }
         None => {

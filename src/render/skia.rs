@@ -18,7 +18,7 @@ pub fn skia_render() {
         ..fontdb::Query::default()
     };
     let id = db.query(&query).unwrap();
-    db.with_face_data(id, |font, face_index| {
+    db.with_face_data(id, |font, _| {
         let font = fontdue::Font::from_bytes(font, fontdue::FontSettings::default()).unwrap();
         let (metrics, bitmap) = font.rasterize('李', 36.0 * SCALE);
         println!("{:?}", metrics);
