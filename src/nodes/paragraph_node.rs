@@ -28,11 +28,15 @@ pub fn append_paragraph_node(editor_state: &mut EditorState) {
             if let Some(last_node) = last_node {
                 let mut paragraph_node = create_paragraph_node();
                 let paragraph_node_key = generate_node_key();
-                last_node.set_next_key(Some(paragraph_node_key));
-                last_node.set_next_key(Some(paragraph_node_key));
+
                 paragraph_node.set_prev_key(Some(last_key));
                 paragraph_node.set_next_key(None);
                 paragraph_node.set_parent_key(Some(ROOT_NODE_KEY));
+
+                last_node.set_next_key(Some(paragraph_node_key));
+                last_node.set_next_key(Some(paragraph_node_key));
+
+                editor_state.get_root_node().set_last_key(Some(paragraph_node_key));
                 editor_state.insert_node(paragraph_node_key, paragraph_node);
             }
         }
