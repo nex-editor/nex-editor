@@ -18,6 +18,10 @@ impl EditorState {
         self.node_map.get_mut(&ROOT_NODE_KEY).unwrap()
     }
 
+    pub fn get_node(&mut self, key: u32) -> Option<&mut EditorNode> {
+        self.node_map.get_mut(&key)
+    }
+
     pub fn insert_node(&mut self, key: u32, node: EditorNode) {
         self.node_map.insert(key, node);
     }
