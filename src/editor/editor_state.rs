@@ -1,6 +1,8 @@
-use crate::editor::editor_node::EditorNode;
+use crate::editor::editor_node::{EditorNode, NodeKey};
 use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
 use std::collections::HashMap;
+use crate::nodes::paragraph_node::create_paragraph_node;
+use crate::utils::utils::generate_node_key;
 
 #[derive(Debug)]
 pub struct EditorState {
@@ -14,17 +16,37 @@ impl EditorState {
         }
     }
 
-    pub fn get_root_node(&mut self) -> &mut EditorNode {
-        self.node_map.get_mut(&ROOT_NODE_KEY).unwrap()
+    pub fn get_node(&mut self, node_key: u32) -> Option<&mut EditorNode> {
+        self.node_map.get_mut(&node_key)
     }
 
-    pub fn get_node(&mut self, key: u32) -> Option<&mut EditorNode> {
-        self.node_map.get_mut(&key)
+    pub fn append_node(&mut self, parent_key: NodeKey, node_key: NodeKey, mut child: EditorNode) {
+        let node = self.node_map.get_mut(&parent_key.unwrap()).unwrap();
+        let last_node_key = node.get_last_node_key();
+
+        if let Some(last_node_key) = last_node_key {
+            let last_node = self.node_map.get_mut(&last_node_key).unwrap();
+            last_node.set_next_node_key(node_key);
+
+            child.set_parent_node_key(node_key);
+            child.set_prev_node_key(Some(last_node_key));
+
+        } else {
+            node.set_first_node_key(node_key);
+            node.set_last_node_key(node_key);
+
+            child.set_parent_node_key(parent_key);
+        }
+
+        self.node_map.insert(node_key.unwrap(), child);
     }
 
-    pub fn insert_node(&mut self, key: u32, node: EditorNode) {
-        self.node_map.insert(key, node);
+    pub fn append_paragraph_node(&mut self) {
+        let paragraph_node = create_paragraph_node();
+        let node_key = generate_node_key();
+        self.append_node(Some(ROOT_NODE_KEY), Some(node_key), paragraph_node);
     }
+
 
     pub fn print_node_map(&self) {
         for (key, node) in &self.node_map {

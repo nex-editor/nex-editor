@@ -59,55 +59,7 @@ impl EditorNode {
         }
     }
 
-    pub fn set_next_key(&mut self, next: NodeKey) {
-        match self {
-            EditorNode::RootNode { prop } => prop.next = next,
-            EditorNode::TextNode { prop, .. } => prop.next = next,
-            EditorNode::ParagraphNode { prop } => prop.next = next,
-        }
-    }
-
-    pub fn get_next_key(&self) -> NodeKey {
-        match self {
-            EditorNode::RootNode { prop } => prop.next,
-            EditorNode::TextNode { prop, .. } => prop.next,
-            EditorNode::ParagraphNode { prop } => prop.next,
-        }
-    }
-
-    pub fn set_prev_key(&mut self, prev: NodeKey) {
-        match self {
-            EditorNode::RootNode { prop } => prop.prev = prev,
-            EditorNode::TextNode { prop, .. } => prop.prev = prev,
-            EditorNode::ParagraphNode { prop } => prop.prev = prev,
-        }
-    }
-
-    pub fn get_prev_key(&self) -> NodeKey {
-        match self {
-            EditorNode::RootNode { prop } => prop.prev,
-            EditorNode::TextNode { prop, .. } => prop.prev,
-            EditorNode::ParagraphNode { prop } => prop.prev,
-        }
-    }
-
-    pub fn set_parent_key(&mut self, parent: NodeKey) {
-        match self {
-            EditorNode::RootNode { prop } => prop.parent = parent,
-            EditorNode::TextNode { prop, .. } => prop.parent = parent,
-            EditorNode::ParagraphNode { prop } => prop.parent = parent,
-        }
-    }
-
-    pub fn get_parent_key(&self) -> NodeKey {
-        match self {
-            EditorNode::RootNode { prop } => prop.parent,
-            EditorNode::TextNode { prop, .. } => prop.parent,
-            EditorNode::ParagraphNode { prop } => prop.parent,
-        }
-    }
-
-    pub fn set_first_key(&mut self, first: NodeKey) {
+    pub fn set_first_node_key(&mut self, first: NodeKey) {
         match self {
             EditorNode::RootNode { prop } => prop.first = first,
             EditorNode::TextNode { prop, .. } => prop.first = first,
@@ -115,7 +67,7 @@ impl EditorNode {
         }
     }
 
-    pub fn get_first_key(&self) -> NodeKey {
+    pub fn get_first_node_key(&self) -> NodeKey {
         match self {
             EditorNode::RootNode { prop } => prop.first,
             EditorNode::TextNode { prop, .. } => prop.first,
@@ -123,7 +75,7 @@ impl EditorNode {
         }
     }
 
-    pub fn set_last_key(&mut self, last: NodeKey) {
+    pub fn set_last_node_key(&mut self, last: NodeKey) {
         match self {
             EditorNode::RootNode { prop } => prop.last = last,
             EditorNode::TextNode { prop, .. } => prop.last = last,
@@ -131,11 +83,51 @@ impl EditorNode {
         }
     }
 
-    pub fn get_last_key(&self) -> NodeKey {
+    pub fn get_last_node_key(&self) -> NodeKey {
         match self {
             EditorNode::RootNode { prop } => prop.last,
             EditorNode::TextNode { prop, .. } => prop.last,
             EditorNode::ParagraphNode { prop } => prop.last,
+        }
+    }
+
+    pub fn set_next_node_key(&mut self, next: NodeKey) {
+        match self {
+            EditorNode::RootNode { prop } => prop.next = next,
+            EditorNode::TextNode { prop, .. } => prop.next = next,
+            EditorNode::ParagraphNode { prop } => prop.next = next,
+        }
+    }
+
+    pub fn set_prev_node_key(&mut self, prev: NodeKey) {
+        match self {
+            EditorNode::RootNode { prop } => prop.prev = prev,
+            EditorNode::TextNode { prop, .. } => prop.prev = prev,
+            EditorNode::ParagraphNode { prop } => prop.prev = prev,
+        }
+    }
+
+    pub fn get_next_node_key(&self) -> NodeKey {
+        match self {
+            EditorNode::RootNode { prop } => prop.next,
+            EditorNode::TextNode { prop, .. } => prop.next,
+            EditorNode::ParagraphNode { prop } => prop.next,
+        }
+    }
+
+    pub fn set_parent_node_key(&mut self, parent: NodeKey) {
+        match self {
+            EditorNode::RootNode { prop } => prop.parent = parent,
+            EditorNode::TextNode { prop, .. } => prop.parent = parent,
+            EditorNode::ParagraphNode { prop } => prop.parent = parent,
+        }
+    }
+
+    pub fn get_parent_node_key(&self) -> NodeKey {
+        match self {
+            EditorNode::RootNode { prop } => prop.parent,
+            EditorNode::TextNode { prop, .. } => prop.parent,
+            EditorNode::ParagraphNode { prop } => prop.parent,
         }
     }
 
@@ -152,20 +144,6 @@ impl EditorNode {
             EditorNode::RootNode { prop } => prop.offset,
             EditorNode::TextNode { prop, .. } => prop.offset,
             EditorNode::ParagraphNode { prop } => prop.offset,
-        }
-    }
-
-    pub fn set_char(&mut self, char: Option<char>) {
-        match self {
-            EditorNode::TextNode { char: c, .. } => *c = char,
-            _ => (),
-        }
-    }
-
-    pub fn get_char(&self) -> Option<char> {
-        match self {
-            EditorNode::TextNode { char, .. } => *char,
-            _ => None,
         }
     }
 }

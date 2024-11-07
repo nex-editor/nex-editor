@@ -4,7 +4,6 @@ pub mod editor_state;
 
 use crate::editor::editor_selection::{create_empty_editor_selection, EditorSelection};
 use crate::editor::editor_state::{create_empty_editor_state, EditorState};
-use crate::nodes::paragraph_node::append_paragraph_node;
 use crate::utils::command::{get_commit_id, get_tag};
 
 #[derive(Debug)]
@@ -38,6 +37,6 @@ impl NexEditor {
     }
 
     pub fn append_paragraph_node(&mut self) {
-        append_paragraph_node(&mut self.state);
+        self.state.append_paragraph_node();
     }
 }
