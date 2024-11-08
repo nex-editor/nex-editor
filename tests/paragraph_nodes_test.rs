@@ -25,5 +25,8 @@ fn test_create_single_paragraph_node() {
     assert_eq!(paragraph_node.get_last_node_key(), None);
     assert_eq!(paragraph_node.get_parent_node_key(), Some(ROOT_NODE_KEY));
 
+    // append another paragraph node
+    editor.append_paragraph_node();
+
     editor.state.print_node_map();
 }

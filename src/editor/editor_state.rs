@@ -21,19 +21,21 @@ impl EditorState {
     }
 
     pub fn append_node(&mut self, parent_key: NodeKey, node_key: NodeKey, mut child: EditorNode) {
-        let node = self.node_map.get_mut(&parent_key.unwrap()).unwrap();
-        let last_node_key = node.get_last_node_key();
+        let parent_node = self.node_map.get_mut(&parent_key.unwrap()).unwrap();
+        let last_node_key = parent_node.get_last_node_key();
 
         if let Some(last_node_key) = last_node_key {
             let last_node = self.node_map.get_mut(&last_node_key).unwrap();
             last_node.set_next_node_key(node_key);
 
-            child.set_parent_node_key(node_key);
+            child.set_parent_node_key(parent_key);
             child.set_prev_node_key(Some(last_node_key));
 
+            self.node_map.get_mut(&parent_key.unwrap()).unwrap().set_last_node_key(node_key);
+
         } else {
-            node.set_first_node_key(node_key);
-            node.set_last_node_key(node_key);
+            parent_node.set_first_node_key(node_key);
+            parent_node.set_last_node_key(node_key);
 
             child.set_parent_node_key(parent_key);
         }
@@ -49,8 +51,12 @@ impl EditorState {
 
 
     pub fn print_node_map(&self) {
-        for (key, node) in &self.node_map {
-            println!("key: {}, node: {:?}", key, node);
+        let mut keys = self.node_map.keys().copied().collect::<Vec<u32>>();
+
+        keys.sort_unstable();
+
+        for key in keys {
+            println!("key: {}, node: {:?}", key, self.node_map.get(&key).unwrap());
         }
     }
 }
