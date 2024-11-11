@@ -3,10 +3,11 @@ use nex_editor::editor::NexEditor;
 use nex_editor::nodes::root_node::ROOT_NODE_KEY;
 
 #[test]
-fn test_create_single_paragraph_node() {
+fn test_append_paragraph_node() {
     // append a paragraph node
     let mut editor = NexEditor:: new();
-    editor.append_paragraph_node();
+    let paragraph_node_key = editor.append_paragraph_node();
+    assert_eq!(paragraph_node_key.is_some(), true);
 
     // check the node map
     // length must be 2
@@ -26,7 +27,8 @@ fn test_create_single_paragraph_node() {
     assert_eq!(paragraph_node.get_parent_node_key(), Some(ROOT_NODE_KEY));
 
     // append another paragraph node
-    editor.append_paragraph_node();
+    let paragraph_node_key = editor.append_paragraph_node();
+    assert_eq!(paragraph_node_key.is_some(), true);
 
     editor.state.print_node_map();
 }

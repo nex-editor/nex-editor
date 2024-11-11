@@ -2,6 +2,7 @@ use crate::editor::editor_node::{EditorNode, NodeKey};
 use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
 use std::collections::HashMap;
 use crate::nodes::paragraph_node::create_paragraph_node;
+use crate::nodes::text_node::create_text_node;
 use crate::utils::utils::generate_node_key;
 
 #[derive(Debug)]
@@ -43,13 +44,29 @@ impl EditorState {
         self.node_map.insert(node_key.unwrap(), child);
     }
 
-    pub fn append_paragraph_node(&mut self) {
+    pub fn append_paragraph_node(&mut self) -> NodeKey {
         let paragraph_node = create_paragraph_node();
         let node_key = generate_node_key();
         self.append_node(Some(ROOT_NODE_KEY), Some(node_key), paragraph_node);
+        Some(node_key)
     }
 
-
+    pub fn append_text_node(&mut self, paragraph_node_key: u32, char: char) -> NodeKey  {
+        let paragraph_node = self.node_map.get_mut(&paragraph_node_key);
+        match paragraph_node {
+            None => {
+                eprintln!("append text node failed, paragraph node not found");
+                None
+            }
+            Some(_) => {
+                let text_node = create_text_node(char);
+                let node_key = generate_node_key();
+                self.append_node(Some(paragraph_node_key), Some(node_key), text_node);
+                Some(node_key)
+            }
+        }
+    }
+    
     pub fn print_node_map(&self) {
         let mut keys = self.node_map.keys().copied().collect::<Vec<u32>>();
 

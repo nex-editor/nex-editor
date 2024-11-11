@@ -43,7 +43,7 @@ pub enum EditorNode {
     },
     TextNode {
         prop: EditorNodeProp,
-        char: Option<char>,
+        char: char,
     },
     ParagraphNode {
         prop: EditorNodeProp,
@@ -91,14 +91,6 @@ impl EditorNode {
         }
     }
 
-    pub fn set_next_node_key(&mut self, next: NodeKey) {
-        match self {
-            EditorNode::RootNode { prop } => prop.next = next,
-            EditorNode::TextNode { prop, .. } => prop.next = next,
-            EditorNode::ParagraphNode { prop } => prop.next = next,
-        }
-    }
-
     pub fn set_prev_node_key(&mut self, prev: NodeKey) {
         match self {
             EditorNode::RootNode { prop } => prop.prev = prev,
@@ -107,6 +99,22 @@ impl EditorNode {
         }
     }
 
+    pub fn get_prev_node_key(&self) -> NodeKey {
+        match self {
+            EditorNode::RootNode { prop } => prop.prev,
+            EditorNode::TextNode { prop, .. } => prop.prev,
+            EditorNode::ParagraphNode { prop } => prop.prev,
+        }
+    }
+
+    pub fn set_next_node_key(&mut self, next: NodeKey) {
+        match self {
+            EditorNode::RootNode { prop } => prop.next = next,
+            EditorNode::TextNode { prop, .. } => prop.next = next,
+            EditorNode::ParagraphNode { prop } => prop.next = next,
+        }
+    }
+    
     pub fn get_next_node_key(&self) -> NodeKey {
         match self {
             EditorNode::RootNode { prop } => prop.next,
@@ -144,6 +152,13 @@ impl EditorNode {
             EditorNode::RootNode { prop } => prop.offset,
             EditorNode::TextNode { prop, .. } => prop.offset,
             EditorNode::ParagraphNode { prop } => prop.offset,
+        }
+    }
+    
+    pub fn get_char(&self) -> char {
+        match self {
+            EditorNode::TextNode { prop, char } => *char,
+            _ => panic!("TextNode is required"),
         }
     }
 }

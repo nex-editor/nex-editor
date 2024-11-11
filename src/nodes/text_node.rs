@@ -1,6 +1,6 @@
 use crate::editor::editor_node::{EditorNode, EditorNodeProp, NodeTag, NodeType};
 
-pub fn create_text_node(char: Option<char>) -> EditorNode {
+pub fn create_text_node(char: char) -> EditorNode {
     EditorNode::TextNode {
         prop: EditorNodeProp {
             r#type: NodeType::TextNode,
