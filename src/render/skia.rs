@@ -1,7 +1,7 @@
 use tiny_skia::Pixmap;
 use tiny_skia as sk;
 
-pub fn skia_render(font: &fontdue::Font, canvas: &mut Pixmap, scale: f32) {
+pub fn skia_render(font: &fontdue::Font, canvas: &mut Pixmap, _scale: f32) {
     let (metrics, bitmap) = font.rasterize('A', 16.0 * 1.0);
     let mut text_pixmap = sk::Pixmap::new(metrics.width as u32, metrics.height as u32).unwrap();
     for x in 0..metrics.width {

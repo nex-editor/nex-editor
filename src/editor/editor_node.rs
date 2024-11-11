@@ -114,7 +114,7 @@ impl EditorNode {
             EditorNode::ParagraphNode { prop } => prop.next = next,
         }
     }
-    
+
     pub fn get_next_node_key(&self) -> NodeKey {
         match self {
             EditorNode::RootNode { prop } => prop.next,
@@ -154,10 +154,10 @@ impl EditorNode {
             EditorNode::ParagraphNode { prop } => prop.offset,
         }
     }
-    
+
     pub fn get_char(&self) -> char {
         match self {
-            EditorNode::TextNode { prop, char } => *char,
+            EditorNode::TextNode { prop: _, char } => *char,
             _ => panic!("TextNode is required"),
         }
     }

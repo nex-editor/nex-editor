@@ -5,9 +5,11 @@ use crate::nodes::paragraph_node::create_paragraph_node;
 use crate::nodes::text_node::create_text_node;
 use crate::utils::utils::generate_node_key;
 
+pub type NodeMap = HashMap<u32, EditorNode>;
+
 #[derive(Debug)]
 pub struct EditorState {
-    pub node_map: HashMap<u32, EditorNode>,
+    pub node_map: NodeMap,
 }
 
 impl EditorState {
@@ -66,7 +68,7 @@ impl EditorState {
             }
         }
     }
-    
+
     pub fn print_node_map(&self) {
         let mut keys = self.node_map.keys().copied().collect::<Vec<u32>>();
 
