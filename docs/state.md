@@ -1,2 +1,3 @@
 # State
-![img.png](/docs/images/state.png)
+
+[//]: # (![img.png]&#40;/docs/images/state.png&#41;)
