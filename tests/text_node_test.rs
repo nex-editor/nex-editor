@@ -1,18 +1,12 @@
 use nex_editor::editor::editor_node::NodeType;
-use nex_editor::editor::NexEditor;
+use sample::sample1;
 use nex_editor::nodes::root_node::ROOT_NODE_KEY;
+
+pub mod sample;
 
 #[test]
 fn test_append_text_node() {
-    let mut editor = NexEditor:: new();
-    let string = "hello world";
-
-    // append hello world
-    if let Some(paragraph_node_key) = editor.append_paragraph_node() {
-        for c in string.chars() {
-            editor.append_text_node(paragraph_node_key, c);
-        }
-    }
+    let (editor, string) = sample1();
 
     editor.state.print_node_map();
 

@@ -2,8 +2,14 @@
 pub struct Page {
     height: u32,
     width: u32,
-    name: &'static str,
+    name: PageName,
     padding: Padding,
+}
+
+#[derive(Debug)]
+pub enum PageName {
+    A4,
+    Custom,
 }
 
 impl Page {
@@ -11,7 +17,7 @@ impl Page {
         Page {
             height: 0,
             width: 0,
-            name: "",
+            name: PageName::Custom,
             padding: Padding {
                 top: 0,
                 bottom: 0,
@@ -33,7 +39,7 @@ pub struct Padding {
 pub const A4: Page = Page {
     height: 1122,
     width: 793,
-    name: "A4",
+    name: PageName::A4,
     padding: Padding {
         top: 56,
         bottom: 56,
