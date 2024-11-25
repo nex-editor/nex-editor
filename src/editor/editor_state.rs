@@ -3,6 +3,8 @@ use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
 use std::collections::HashMap;
 use crate::nodes::paragraph_node::create_paragraph_node;
 use crate::nodes::text_node::create_text_node;
+use crate::page::page::PageName;
+use crate::selection::selection::{create_empty_editor_selection, EditorSelection};
 use crate::utils::utils::generate_node_key;
 
 pub type NodeMap = HashMap<u32, EditorNode>;
@@ -10,12 +12,18 @@ pub type NodeMap = HashMap<u32, EditorNode>;
 #[derive(Debug)]
 pub struct EditorState {
     pub node_map: NodeMap,
+    pub selection: EditorSelection,
+    pub page: PageName,
+    pub scale: f32,
 }
 
 impl EditorState {
     pub fn new() -> EditorState {
         EditorState {
             node_map: HashMap::new(),
+            selection: create_empty_editor_selection(),
+            page: PageName::A4,
+            scale: 1.0,
         }
     }
 

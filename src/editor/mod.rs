@@ -1,12 +1,9 @@
 pub mod editor_node;
-pub mod editor_selection;
 pub mod editor_state;
 
 use crate::editor::editor_node::NodeKey;
-use crate::editor::editor_selection::{create_empty_editor_selection, EditorSelection};
 use crate::editor::editor_state::{create_empty_editor_state, EditorState};
-use crate::layout::layout_frame;
-use crate::layout::page::{Page, A4};
+
 use crate::utils::command::{get_commit_id, get_tag};
 
 #[derive(Debug)]
@@ -14,9 +11,6 @@ pub struct NexEditor {
     version: String,
     tag: String,
     pub state: EditorState,
-    pub selection: EditorSelection,
-    pub page: Page,
-    pub scale: f32,
 }
 
 impl NexEditor {
@@ -24,17 +18,13 @@ impl NexEditor {
         let version = get_commit_id();
         let tag = get_tag();
         let state = create_empty_editor_state();
-        let selection = create_empty_editor_selection();
 
         let editor = NexEditor {
             version,
             tag,
             state,
-            selection,
-            page: A4,
-            scale: 1.0,
         };
-        
+
         editor
     }
 
