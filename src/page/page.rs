@@ -1,9 +1,9 @@
 #[derive(Debug)]
 pub struct Page {
-    height: u32,
-    width: u32,
-    name: PageName,
-    padding: Padding,
+    pub height: u32,
+    pub width: u32,
+    pub name: PageName,
+    pub padding: Padding,
 }
 
 #[derive(Debug)]

@@ -3,7 +3,7 @@ use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
 use std::collections::HashMap;
 use crate::nodes::paragraph_node::create_paragraph_node;
 use crate::nodes::text_node::create_text_node;
-use crate::page::page::PageName;
+use crate::page::page::{Page, PageName, A4};
 use crate::selection::selection::{create_empty_editor_selection, EditorSelection};
 use crate::utils::utils::generate_node_key;
 
@@ -13,7 +13,7 @@ pub type NodeMap = HashMap<u32, EditorNode>;
 pub struct EditorState {
     pub node_map: NodeMap,
     pub selection: EditorSelection,
-    pub page: PageName,
+    pub page: Page,
     pub scale: f32,
 }
 
@@ -22,13 +22,9 @@ impl EditorState {
         EditorState {
             node_map: HashMap::new(),
             selection: create_empty_editor_selection(),
-            page: PageName::A4,
+            page: A4,
             scale: 1.0,
         }
-    }
-
-    pub fn get_node(&mut self, node_key: u32) -> Option<&mut EditorNode> {
-        self.node_map.get_mut(&node_key)
     }
 
     pub fn append_node(&mut self, parent_key: NodeKey, node_key: NodeKey, mut child: EditorNode) {
@@ -95,4 +91,12 @@ pub fn create_empty_editor_state() -> EditorState {
     let mut editor_state = EditorState::new();
     editor_state.node_map.insert(ROOT_NODE_KEY, root_node);
     editor_state
+}
+
+pub fn get_node(editor_state: &mut EditorState, current_key: NodeKey) -> Option<&mut EditorNode> {
+    if let Some(current_node) = editor_state.node_map.get_mut(&current_key.unwrap()) {
+        Some(current_node)
+    } else {
+        None
+    }
 }
