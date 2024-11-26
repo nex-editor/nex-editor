@@ -15,6 +15,8 @@ pub fn layout_frame(editor_state: &mut EditorState) {
         let parent_node_key = current_node.get_parent_node_key();
 
         // do Something
+        println!("node_key: {:?}, node_type: {:?}", current_node_key.unwrap(), current_node);
+
         if let Some(first_node) = get_node(editor_state, first_node_key) {
             // avoid infinite loop
             if !is_visited_node_map.contains_key(&first_node_key) {
