@@ -1,4 +1,3 @@
-use fontdb::Style;
 use crate::nodes::paragraph_node::ParagraphNodeStyle;
 use crate::nodes::text_node::TextNodeStyle;
 

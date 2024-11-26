@@ -94,8 +94,12 @@ pub fn create_empty_editor_state() -> EditorState {
 }
 
 pub fn get_node(editor_state: &mut EditorState, current_key: NodeKey) -> Option<&mut EditorNode> {
-    if let Some(current_node) = editor_state.node_map.get_mut(&current_key.unwrap()) {
-        Some(current_node)
+    if let Some(current_key) = current_key {
+        if let Some(current_node) = editor_state.node_map.get_mut(&current_key) {
+            Some(current_node)
+        } else {
+            None
+        }
     } else {
         None
     }
