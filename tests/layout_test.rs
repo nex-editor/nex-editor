@@ -5,8 +5,8 @@ pub mod sample;
 
 #[test]
 pub fn test_layout_frame() {
-    let (editor, string) = sample1();
+    let (mut editor, string) = sample1();
     println!("{:?}", editor);
     
-    layout_frame(&editor.state);
+    layout_frame(&mut editor.state);
 }

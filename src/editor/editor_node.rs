@@ -1,3 +1,7 @@
+use fontdb::Style;
+use crate::nodes::paragraph_node::ParagraphNodeStyle;
+use crate::nodes::text_node::TextNodeStyle;
+
 pub type NodeKey = Option<u32>;
 
 #[derive(Debug, PartialEq)]
@@ -7,33 +11,14 @@ pub enum NodeType {
     ParagraphNode = 3,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum NodeTag {
-    RootNode,
-    TextNode,
-    ParagraphNode,
-}
-
-impl NodeTag {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            NodeTag::RootNode => "root",
-            NodeTag::TextNode => "text",
-            NodeTag::ParagraphNode => "paragraph",
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct EditorNodeProp {
-    pub r#type: NodeType,
+    pub node_type: NodeType,
     pub first: NodeKey,
     pub last: NodeKey,
     pub next: NodeKey,
     pub prev: NodeKey,
     pub parent: NodeKey,
-    pub tag: NodeTag,
-    pub offset: usize,
 }
 
 #[derive(Debug)]
@@ -44,18 +29,20 @@ pub enum EditorNode {
     TextNode {
         prop: EditorNodeProp,
         char: char,
+        style: TextNodeStyle,
     },
     ParagraphNode {
         prop: EditorNodeProp,
+        style: ParagraphNodeStyle,
     },
 }
 
 impl EditorNode {
     pub fn is_type(&self, node_type: NodeType) -> bool {
         match self {
-            EditorNode::RootNode { prop } => prop.r#type == node_type,
-            EditorNode::TextNode { prop, .. } => prop.r#type == node_type,
-            EditorNode::ParagraphNode { prop } => prop.r#type == node_type,
+            EditorNode::RootNode { prop } => prop.node_type == node_type,
+            EditorNode::TextNode { prop, .. } => prop.node_type == node_type,
+            EditorNode::ParagraphNode { prop, .. } => prop.node_type == node_type,
         }
     }
 
@@ -63,7 +50,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.first = first,
             EditorNode::TextNode { prop, .. } => prop.first = first,
-            EditorNode::ParagraphNode { prop } => prop.first = first,
+            EditorNode::ParagraphNode { prop, .. } => prop.first = first,
         }
     }
 
@@ -71,7 +58,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.first,
             EditorNode::TextNode { prop, .. } => prop.first,
-            EditorNode::ParagraphNode { prop } => prop.first,
+            EditorNode::ParagraphNode { prop, .. } => prop.first,
         }
     }
 
@@ -79,7 +66,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.last = last,
             EditorNode::TextNode { prop, .. } => prop.last = last,
-            EditorNode::ParagraphNode { prop } => prop.last = last,
+            EditorNode::ParagraphNode { prop, .. } => prop.last = last,
         }
     }
 
@@ -87,7 +74,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.last,
             EditorNode::TextNode { prop, .. } => prop.last,
-            EditorNode::ParagraphNode { prop } => prop.last,
+            EditorNode::ParagraphNode { prop, .. } => prop.last,
         }
     }
 
@@ -95,7 +82,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.prev = prev,
             EditorNode::TextNode { prop, .. } => prop.prev = prev,
-            EditorNode::ParagraphNode { prop } => prop.prev = prev,
+            EditorNode::ParagraphNode { prop, .. } => prop.prev = prev,
         }
     }
 
@@ -103,7 +90,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.prev,
             EditorNode::TextNode { prop, .. } => prop.prev,
-            EditorNode::ParagraphNode { prop } => prop.prev,
+            EditorNode::ParagraphNode { prop, .. } => prop.prev,
         }
     }
 
@@ -111,7 +98,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.next = next,
             EditorNode::TextNode { prop, .. } => prop.next = next,
-            EditorNode::ParagraphNode { prop } => prop.next = next,
+            EditorNode::ParagraphNode { prop, .. } => prop.next = next,
         }
     }
 
@@ -119,7 +106,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.next,
             EditorNode::TextNode { prop, .. } => prop.next,
-            EditorNode::ParagraphNode { prop } => prop.next,
+            EditorNode::ParagraphNode { prop, .. } => prop.next,
         }
     }
 
@@ -127,7 +114,7 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.parent = parent,
             EditorNode::TextNode { prop, .. } => prop.parent = parent,
-            EditorNode::ParagraphNode { prop } => prop.parent = parent,
+            EditorNode::ParagraphNode { prop, .. } => prop.parent = parent,
         }
     }
 
@@ -135,29 +122,13 @@ impl EditorNode {
         match self {
             EditorNode::RootNode { prop } => prop.parent,
             EditorNode::TextNode { prop, .. } => prop.parent,
-            EditorNode::ParagraphNode { prop } => prop.parent,
+            EditorNode::ParagraphNode { prop, .. } => prop.parent,
         }
     }
-
-    pub fn set_offset(&mut self, offset: usize) {
-        match self {
-            EditorNode::RootNode { prop } => prop.offset = offset,
-            EditorNode::TextNode { prop, .. } => prop.offset = offset,
-            EditorNode::ParagraphNode { prop } => prop.offset = offset,
-        }
-    }
-
-    pub fn get_offset(&self) -> usize {
-        match self {
-            EditorNode::RootNode { prop } => prop.offset,
-            EditorNode::TextNode { prop, .. } => prop.offset,
-            EditorNode::ParagraphNode { prop } => prop.offset,
-        }
-    }
-
+    
     pub fn get_char(&self) -> char {
         match self {
-            EditorNode::TextNode { prop: _, char } => *char,
+            EditorNode::TextNode { prop: _, char, .. } => *char,
             _ => panic!("TextNode is required"),
         }
     }

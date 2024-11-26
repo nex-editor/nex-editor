@@ -5,3 +5,4 @@ pub mod render;
 pub mod layout;
 mod page;
 mod selection;
+mod color;

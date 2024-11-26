@@ -1,4 +1,5 @@
 # nex-editor
 nex-editor is a rich text editor based on rust, support pageing like word.
 
-## State
+## Feature
+- [ ] paragraph + text render
