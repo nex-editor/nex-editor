@@ -1,10 +1,14 @@
 use crate::editor::editor_node::{EditorNode, EditorNodeProp, NodeType};
+use crate::nodes::{NodePadding, NodeStyle};
 
 #[derive(Debug)]
 pub struct ParagraphNodeStyle {
-    text_alignment: ParagraphNodeAlignment,
+    pub text_alignment: ParagraphNodeAlignment,
     // px
-    text_indent: usize,
+    pub text_indent: usize,
+
+    // padding
+    pub padding: NodePadding,
 }
 
 #[derive(Debug)]
@@ -24,9 +28,15 @@ pub fn create_paragraph_node() -> EditorNode {
             prev: None,
             parent: None,
         },
-        style: ParagraphNodeStyle {
+        style: NodeStyle::Paragraph(ParagraphNodeStyle {
             text_alignment: ParagraphNodeAlignment::Left,
-            text_indent: 0
-        }
+            text_indent: 0,
+            padding: NodePadding {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+            },
+        }),
     }
 }

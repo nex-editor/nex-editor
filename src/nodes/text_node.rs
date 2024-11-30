@@ -1,5 +1,6 @@
 use crate::color::Color;
 use crate::editor::editor_node::{EditorNode, EditorNodeProp, NodeType};
+use crate::nodes::NodeStyle;
 
 #[derive(Debug)]
 pub struct TextNodeStyle {
@@ -21,12 +22,12 @@ pub fn create_text_node(char: char) -> EditorNode {
             parent: None,
         },
         char,
-        style: TextNodeStyle {
+        style: NodeStyle::Text(TextNodeStyle {
             font_family: String::from("monospace"),
             font_size: 12,
             font_weight: 400,
             color: Color::BLACK,
             background_color: Color::TRANSPARENT,
-        }
+        }),
     }
 }

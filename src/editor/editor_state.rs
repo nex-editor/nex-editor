@@ -1,11 +1,11 @@
 use crate::editor::editor_node::{EditorNode, NodeKey};
-use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
-use std::collections::HashMap;
 use crate::nodes::paragraph_node::create_paragraph_node;
+use crate::nodes::root_node::{create_root_node, ROOT_NODE_KEY};
 use crate::nodes::text_node::create_text_node;
-use crate::page::page::{Page, PageName, A4};
+use crate::page::page::{Page, A4};
 use crate::selection::selection::{create_empty_editor_selection, EditorSelection};
 use crate::utils::utils::generate_node_key;
+use std::collections::HashMap;
 
 pub type NodeMap = HashMap<u32, EditorNode>;
 
@@ -39,7 +39,6 @@ impl EditorState {
             child.set_prev_node_key(Some(last_node_key));
 
             self.node_map.get_mut(&parent_key.unwrap()).unwrap().set_last_node_key(node_key);
-
         } else {
             parent_node.set_first_node_key(node_key);
             parent_node.set_last_node_key(node_key);
@@ -57,7 +56,7 @@ impl EditorState {
         Some(node_key)
     }
 
-    pub fn append_text_node(&mut self, paragraph_node_key: u32, char: char) -> NodeKey  {
+    pub fn append_text_node(&mut self, paragraph_node_key: u32, char: char) -> NodeKey {
         let paragraph_node = self.node_map.get_mut(&paragraph_node_key);
         match paragraph_node {
             None => {

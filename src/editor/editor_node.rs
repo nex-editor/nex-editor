@@ -1,5 +1,4 @@
-use crate::nodes::paragraph_node::ParagraphNodeStyle;
-use crate::nodes::text_node::TextNodeStyle;
+use crate::nodes::NodeStyle;
 
 pub type NodeKey = Option<u32>;
 
@@ -28,11 +27,11 @@ pub enum EditorNode {
     TextNode {
         prop: EditorNodeProp,
         char: char,
-        style: TextNodeStyle,
+        style: NodeStyle,
     },
     ParagraphNode {
         prop: EditorNodeProp,
-        style: ParagraphNodeStyle,
+        style: NodeStyle,
     },
 }
 
@@ -124,11 +123,19 @@ impl EditorNode {
             EditorNode::ParagraphNode { prop, .. } => prop.parent,
         }
     }
-    
+
     pub fn get_char(&self) -> char {
         match self {
             EditorNode::TextNode { prop: _, char, .. } => *char,
             _ => panic!("TextNode is required"),
+        }
+    }
+
+    pub fn get_style(&self) -> &NodeStyle {
+        match self {
+            EditorNode::TextNode { prop: _, style, .. } => style,
+            EditorNode::ParagraphNode { prop: _, style, .. } => style,
+            _ => panic!("TextNode or ParagraphNode is required"),
         }
     }
 }

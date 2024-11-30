@@ -1,3 +1,6 @@
+mod paragraph_layout;
+mod measure;
+
 use crate::editor::editor_node::NodeKey;
 use crate::editor::editor_state::{get_node, EditorState};
 use crate::nodes::root_node::ROOT_NODE_KEY;
