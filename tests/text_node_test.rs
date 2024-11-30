@@ -1,6 +1,6 @@
 use nex_editor::editor::editor_node::NodeType;
-use sample::sample1;
 use nex_editor::nodes::root_node::ROOT_NODE_KEY;
+use sample::sample1;
 
 pub mod sample;
 
