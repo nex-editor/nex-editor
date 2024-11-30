@@ -2,7 +2,7 @@ use nex_editor::render::skia::skia_render;
 use tiny_skia as sk;
 
 #[test]
-fn test_skia() {
+fn render_skia_render() {
     let mut db = fontdb::Database::new();
     db.load_system_fonts();
 
