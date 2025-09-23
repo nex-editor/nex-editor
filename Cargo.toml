@@ -2,6 +2,8 @@
 resolver = "2"
 members = [
     "crates/document",
+    "crates/editor",
+    "crates/app",
 ]
 [workspace.package]
 version = "0.1.0"
@@ -9,4 +11,4 @@ edition = "2021"
 
 [workspace.dependencies]
 loro = "1.8.0"
-serde = "1.0.226"
+clap = { version = "4.0", features = ["derive"] }
