@@ -1,3 +1,6 @@
 /target
 /.idea
 .DS_Store
+apps/web-playground/node_modules
+apps/web-playground/dist
+apps/web-playground/public/wasm/nex_editor_wasm*

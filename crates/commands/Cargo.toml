@@ -1,0 +1,13 @@
+[package]
+name = "commands"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+model = { path = "../model" }
+transform = { path = "../transform" }
+state = { path = "../state" }

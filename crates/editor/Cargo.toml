@@ -1,8 +1,0 @@
-[package]
-name = "editor"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-loro.workspace = true
-document = { path = "../document" }

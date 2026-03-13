@@ -1,0 +1,13 @@
+[package]
+name = "nex-editor-wasm"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json = { workspace = true }
+runtime = { path = "../runtime" }
+wasm-bindgen = { workspace = true }
+

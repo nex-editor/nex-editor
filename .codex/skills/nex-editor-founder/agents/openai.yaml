@@ -1,0 +1,7 @@
+interface:
+  display_name: "Nex Editor Founder"
+  short_description: "Guides core, runtime, WASM, and shell work"
+  default_prompt: "Use $nex-editor-founder to extend nex-editor as a headless cross-platform editor with thin platform shells."
+
+policy:
+  allow_implicit_invocation: true
