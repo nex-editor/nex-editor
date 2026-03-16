@@ -1,24 +1,23 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
   name: "nex-editor"
-  text: "nex-editor"
-  tagline: My great project tagline
+  text: "Minimal Editor First"
+  tagline: Build the smallest correct plain-text editor in Rust first, then grow richer document features on top.
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Protocol V1
+      link: /protocol-v1
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Runtime State
+      link: /state
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Simple Plain Text First
+    details: The current goal is a minimal notepad-like editor with typing, deletion, caret movement, and selection.
+  - title: Rust Owns Behavior
+    details: Editing state, layout, hit testing, caret geometry, and selection geometry live in Rust.
+  - title: Thin Shells
+    details: Web, desktop, and mobile shells should only forward native events and draw render snapshots.
 ---

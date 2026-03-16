@@ -4,6 +4,10 @@ Minimal browser playground for the headless runtime.
 
 ## Notes
 
-- The runtime boundary is `InputCommand -> EditorSnapshot`.
-- Generate the browser package into `public/wasm`, for example with a command like `wasm-pack build crates/wasm --target web --out-dir ../../apps/web-playground/public/wasm`.
-- Canvas owns rendering; the browser does not use `contenteditable` as source of truth.
+- The runtime boundary is `EditorEvent -> RenderSnapshot`.
+- Generate the browser package into `apps/web-playground/src/wasm` so Vite can treat the WASM bridge as part of the app module graph.
+- Rust owns editing, layout, hit testing, selection geometry, and caret geometry.
+- Canvas owns drawing only; the browser shell forwards events and does not use `contenteditable` as source of truth.
+- The current product target is a minimal plain-text editor, not a rich-text document editor.
+- Keep playground changes focused on validating typing, deletion, selection, caret movement, and layout ownership.
+- Run `npm run test:e2e` to verify real browser interaction with the canvas editor.

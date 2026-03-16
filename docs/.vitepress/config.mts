@@ -3,11 +3,11 @@ import { defineConfig } from "vitepress";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "nex-editor",
-  description: "nex-editor",
+  description: "Headless editor core with WASM and platform shells",
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: "Home", link: "/" },
+      { text: "Protocol", link: "/protocol-v1" },
       { text: "Docs", link: "/state" },
       { text: "About", link: "/about" },
     ],
@@ -15,7 +15,10 @@ export default defineConfig({
     sidebar: [
       {
         text: "Docs",
-        items: [{ text: "State", link: "/state" }],
+        items: [
+          { text: "Cross-Platform Protocol V1", link: "/protocol-v1" },
+          { text: "State", link: "/state" },
+        ],
       },
     ],
 

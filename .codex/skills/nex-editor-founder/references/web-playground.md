@@ -14,17 +14,24 @@ npm run build:wasm
 npm run dev
 ```
 
-`npm run build` should produce a complete browser bundle, including WASM output under `public/wasm`.
+`npm run build` should produce a complete browser bundle, with the generated WASM bridge emitted under `src/wasm` before Vite bundles it.
+
+For browser interaction validation:
+
+```bash
+npm run test:e2e
+```
 
 ## Browser Constraints
 
 - Canvas is the current render surface.
-- The browser owns focus, mouse events, key events, and local text layout.
-- Rust owns document state, selection state, and edit application.
+- The browser owns focus, mouse events, and key events.
+- Rust owns document state, edit application, layout, hit testing, selection geometry, and caret geometry.
 
 ## When Editing The Playground
 
 - Keep the render loop simple and inspectable.
-- Prefer explicit coordinate-to-offset logic over hidden DOM selection behavior.
+- Do not add browser-side coordinate-to-offset logic when Rust can own hit testing.
 - Add browser-only features only if they help validate the runtime contract.
 - Do not bury core editor semantics inside TypeScript helpers.
+- When fixing browser interaction bugs, add or update an E2E scenario that reproduces the issue.

@@ -3,4 +3,5 @@
 .DS_Store
 apps/web-playground/node_modules
 apps/web-playground/dist
-apps/web-playground/public/wasm/nex_editor_wasm*
+apps/web-playground/test-results
+apps/web-playground/src/wasm/nex_editor_wasm*
