@@ -8,4 +8,5 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 model = { path = "../model" }
 state = { path = "../state" }
-
+transform = { path = "../transform" }
+commands = { path = "../commands" }

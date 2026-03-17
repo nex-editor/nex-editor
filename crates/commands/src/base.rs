@@ -12,6 +12,12 @@ pub trait BaseCommands {
     /// Delete the selection and insert text
     fn type_text(&self, state: &EditorState, text: &str) -> Transaction;
 
+    /// Delete backward from the current selection or cursor
+    fn delete_backward(&self, state: &EditorState) -> Transaction;
+
+    /// Delete forward from the current selection or cursor
+    fn delete_forward(&self, state: &EditorState) -> Transaction;
+
     /// Join the selected block with its previous sibling
     fn join_backward(&self, state: &EditorState) -> Transaction;
 
@@ -32,6 +38,9 @@ pub trait BaseCommands {
 
     /// Move the cursor one line down
     fn move_down(&self, state: &EditorState) -> Transaction;
+
+    /// Select the whole document
+    fn select_all(&self, state: &EditorState) -> Transaction;
 
     /// Toggle a mark (bold, italic, etc.)
     fn toggle_mark(&self, state: &EditorState, mark_type: &str) -> Transaction;
@@ -72,6 +81,39 @@ impl BaseCommands for BaseCommandsImpl {
         tr
     }
 
+    fn delete_backward(&self, state: &EditorState) -> Transaction {
+        let (from, to) = helpers::get_selection_range(state);
+        let mut tr = Transaction::new(state.clone());
+        if from != to {
+            tr.delete(from, to).set_cursor(from);
+            return tr;
+        }
+
+        if from == 0 {
+            return tr;
+        }
+
+        tr.delete(from - 1, from).set_cursor(from - 1);
+        tr
+    }
+
+    fn delete_forward(&self, state: &EditorState) -> Transaction {
+        let (from, to) = helpers::get_selection_range(state);
+        let mut tr = Transaction::new(state.clone());
+        if from != to {
+            tr.delete(from, to).set_cursor(from);
+            return tr;
+        }
+
+        let text_len = state.doc().plain_text_len();
+        if from >= text_len {
+            return tr;
+        }
+
+        tr.delete(from, from + 1).set_cursor(from);
+        tr
+    }
+
     fn join_backward(&self, state: &EditorState) -> Transaction {
         let pos = helpers::get_cursor(state);
         let mut tr = Transaction::new(state.clone());
@@ -94,7 +136,7 @@ impl BaseCommands for BaseCommandsImpl {
 
     fn move_forward_char(&self, state: &EditorState) -> Transaction {
         let pos = helpers::get_cursor(state);
-        let next = (pos + 1).min(state.doc().text_content().len());
+        let next = (pos + 1).min(state.doc().plain_text_len());
         let mut tr = Transaction::new(state.clone());
         tr.set_cursor(next);
         tr
@@ -113,6 +155,12 @@ impl BaseCommands for BaseCommandsImpl {
 
     fn move_down(&self, state: &EditorState) -> Transaction {
         Transaction::new(state.clone())
+    }
+
+    fn select_all(&self, state: &EditorState) -> Transaction {
+        let mut tr = Transaction::new(state.clone());
+        tr.set_selection_range(0, state.doc().plain_text_len());
+        tr
     }
 
     fn toggle_mark(&self, state: &EditorState, mark_type: &str) -> Transaction {
@@ -174,7 +222,7 @@ pub mod helpers {
 
     /// Check if cursor is at document end
     pub fn is_at_doc_end(state: &EditorState) -> bool {
-        let doc_end = state.doc().content_size().content_size;
+        let doc_end = state.doc().plain_text_len();
         get_cursor(state) >= doc_end
     }
 
@@ -280,7 +328,7 @@ mod tests {
         let doc = model::Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
         let state = EditorState::from_doc(doc.clone()).with_selection(state::Selection::text(state::TextSelection::at(
             &doc,
-            5,
+            6,
         )));
 
         let new_state = executor::apply_command(&state, || cmd.join_backward(&state));
@@ -312,6 +360,41 @@ mod tests {
             BaseCommandsImpl::new().type_text(&state, "Hello")
         });
 
-        assert_eq!(new_state.doc().text_content(), "Hello");
+        assert_eq!(new_state.doc().plain_text(), "Hello");
+    }
+
+    #[test]
+    fn test_delete_backward() {
+        let cmd = BaseCommandsImpl::new();
+        let doc = Node::from_paragraph_texts(vec!["Hello".to_string()]);
+        let state = EditorState::from_doc(doc.clone())
+            .with_selection(state::Selection::text(state::TextSelection::at(&doc, 5)));
+
+        let new_state = executor::apply_command(&state, || cmd.delete_backward(&state));
+        assert_eq!(new_state.doc().plain_text(), "Hell");
+        assert_eq!(new_state.selection().head(), 4);
+    }
+
+    #[test]
+    fn test_delete_forward() {
+        let cmd = BaseCommandsImpl::new();
+        let doc = Node::from_paragraph_texts(vec!["Hello".to_string()]);
+        let state = EditorState::from_doc(doc.clone())
+            .with_selection(state::Selection::text(state::TextSelection::at(&doc, 1)));
+
+        let new_state = executor::apply_command(&state, || cmd.delete_forward(&state));
+        assert_eq!(new_state.doc().plain_text(), "Hllo");
+        assert_eq!(new_state.selection().head(), 1);
+    }
+
+    #[test]
+    fn test_select_all() {
+        let cmd = BaseCommandsImpl::new();
+        let doc = Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
+        let state = EditorState::from_doc(doc);
+
+        let new_state = executor::apply_command(&state, || cmd.select_all(&state));
+        assert_eq!(new_state.selection().anchor(), 0);
+        assert_eq!(new_state.selection().head(), 11);
     }
 }

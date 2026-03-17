@@ -7,11 +7,11 @@ hero:
   tagline: Build the smallest correct plain-text editor in Rust first, then grow richer document features on top.
   actions:
     - theme: brand
-      text: Protocol V1
-      link: /protocol-v1
+      text: Current Flow
+      link: /current-flow-v1
     - theme: alt
-      text: Runtime State
-      link: /state
+      text: Constraints
+      link: /architecture-constraints-v1
 
 features:
   - title: Simple Plain Text First

@@ -154,7 +154,7 @@ impl EditorState {
 
     /// Check if selection is at document end
     pub fn is_at_end(&self) -> bool {
-        let doc_end = self.doc.content_size().content_size;
+        let doc_end = self.doc.plain_text_len();
         self.selection.is_collapsed() && self.selection.head() == doc_end
     }
 
@@ -172,7 +172,7 @@ impl EditorState {
     /// Extract text from a range
     fn extract_text(&self, from: usize, to: usize) -> String {
         self.doc
-            .text_content()
+            .plain_text()
             .chars()
             .skip(from)
             .take(to.saturating_sub(from))
@@ -239,7 +239,7 @@ mod tests {
 
         assert!(state.is_at_start());
         assert!(!state.is_at_end());
-        assert_eq!(state.doc().text_content(), "Hello World");
+        assert_eq!(state.doc().plain_text(), "Hello World");
     }
 
     #[test]

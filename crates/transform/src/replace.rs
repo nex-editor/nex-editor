@@ -176,19 +176,19 @@ impl ReplaceStep {
 impl Step for ReplaceStep {
     fn apply(&self, doc: &Node) -> Result<StepResult, StepError> {
         // Validate positions
-        let doc_len = doc.text_content().len();
+        let doc_len = doc.plain_text_len();
         if self.from > self.to || self.to > doc_len {
             return Err(StepError::PositionOutOfRange(self.from));
         }
 
-        let doc_text = doc.text_content();
+        let doc_text = doc.plain_text();
         let insert_text: String = self.slice.content.iter().map(Node::text_content).collect();
         let mut next_text = String::with_capacity(doc_text.len() - (self.to - self.from) + insert_text.len());
         next_text.push_str(&doc_text[..self.from]);
         next_text.push_str(&insert_text);
         next_text.push_str(&doc_text[self.to..]);
 
-        let new_doc = doc.with_text_content(next_text);
+        let new_doc = doc.with_plain_text(next_text);
         let slice = if self.slice.is_empty() { None } else { Some(self.slice.clone()) };
 
         Ok(StepResult::new(new_doc, self.from, self.to, slice))
@@ -213,7 +213,8 @@ impl Mappable for ReplaceStep {
 
 impl Invertible for ReplaceStep {
     fn invert(&self, doc: &Node) -> Self {
-        let deleted_text = &doc.text_content()[self.from..self.to];
+        let plain_text = doc.plain_text();
+        let deleted_text = &plain_text[self.from..self.to];
         let deleted_slice = if deleted_text.is_empty() {
             Slice::empty()
         } else {
@@ -260,7 +261,7 @@ impl Step for JoinBackwardStep {
                 index = Some(i);
                 break;
             }
-            start += paragraph.len();
+            start += paragraph.len() + 1;
         }
 
         let index = index.ok_or_else(|| {
@@ -286,7 +287,7 @@ impl Step for JoinBackwardStep {
 
 impl Step for SetMarksStep {
     fn apply(&self, doc: &Node) -> Result<StepResult, StepError> {
-        let doc_len = doc.text_content().len();
+        let doc_len = doc.plain_text_len();
         if self.from > self.to || self.to > doc_len {
             return Err(StepError::PositionOutOfRange(self.to));
         }
@@ -464,7 +465,7 @@ mod tests {
     #[test]
     fn test_join_backward_step() {
         let doc = Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
-        let step = JoinBackwardStep::new(5);
+        let step = JoinBackwardStep::new(6);
 
         let result = step.apply(&doc).expect("join should succeed");
         assert_eq!(result.doc.paragraph_texts(), vec!["HelloWorld".to_string()]);

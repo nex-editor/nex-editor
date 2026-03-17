@@ -13,11 +13,33 @@ Keep responsibilities strict:
 - `runtime`: product-facing plain-text facade
 - `wasm/shells`: transport and rendering shells
 
+## Current End-To-End Flow
+
+The current minimal editor should be understood as this pipeline:
+
+1. shell captures a native event
+2. shell maps it to `EditorEvent`
+3. `runtime` routes the event
+4. editing events delegate to `commands` where possible
+5. `commands` build `Transaction`s over `EditorState`
+6. `Transaction::commit()` produces the next `EditorState`
+7. `runtime` derives `TextLayout`
+8. `runtime` builds `RenderSnapshot`
+9. shell draws the snapshot
+
+Practical interpretation:
+
+- document truth lives in `model` and `state`
+- editing semantics should keep moving into `commands`
+- `runtime` should orchestrate event routing, pointer handling, layout-aware navigation, layout, and snapshots
+- `wasm` should stay a bridge, not a behavior layer
+
 ## Design Defaults
 
 - Start from the narrowest schema that supports the current product goal.
 - Prefer behavior-level APIs over leaking internal tree structure.
-- If a new feature can live in `runtime` instead of changing lower layers, keep it in `runtime`.
+- If a new feature is reusable editing semantics, prefer `commands` before `runtime`.
+- If a new feature is layout-aware or pointer-aware orchestration, keep it in `runtime`.
 - Pagination is a derived layout concern, not a model concern.
 
 ## Implementation Standard

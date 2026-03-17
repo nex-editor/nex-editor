@@ -314,6 +314,22 @@ impl Node {
         }
     }
 
+    /// Collect descendant text using the canonical editor plain-text view.
+    ///
+    /// For `doc` nodes in the minimal schema, top-level paragraphs are joined by `\n`.
+    pub fn plain_text(&self) -> String {
+        if self.type_name() == "doc" {
+            return self.paragraph_texts().join("\n");
+        }
+
+        self.text_content()
+    }
+
+    /// Return the length of the canonical plain-text view.
+    pub fn plain_text_len(&self) -> usize {
+        self.plain_text().len()
+    }
+
     /// Return a copy of this node tree with its plain-text content replaced.
     ///
     /// This supports the current minimal editor schema subset:
@@ -344,6 +360,19 @@ impl Node {
         }
     }
 
+    /// Return a copy of this node tree with its canonical plain-text content replaced.
+    ///
+    /// For `doc` nodes, `\n` is interpreted as a paragraph separator.
+    pub fn with_plain_text(&self, text: impl Into<String>) -> Self {
+        let text = text.into();
+        if self.type_name() == "doc" {
+            let paragraphs = text.split('\n').map(str::to_string).collect();
+            return Self::from_paragraph_texts(paragraphs);
+        }
+
+        self.with_text_content(text)
+    }
+
     /// Return the document's paragraph texts for the minimal supported schema.
     pub fn paragraph_texts(&self) -> Vec<String> {
         if self.type_name() == "doc" {
@@ -366,7 +395,7 @@ impl Node {
             if pos <= end {
                 return Some((index, pos.saturating_sub(start)));
             }
-            start = end;
+            start = end + 1;
         }
 
         paragraphs
@@ -415,13 +444,16 @@ impl Node {
 
                     Node::new_text_with_marks(tc.text.clone(), marks)
                 }
-                NodeContent::Nodes(children) => Node::new_block(
-                    node.type_name(),
-                    children
-                        .iter()
-                        .map(|child| apply_to_node(child, from, to, offset, add, remove))
-                        .collect(),
-                ),
+                NodeContent::Nodes(children) => {
+                    let mut next_children = Vec::with_capacity(children.len());
+                    for (index, child) in children.iter().enumerate() {
+                        next_children.push(apply_to_node(child, from, to, offset, add, remove));
+                        if node.type_name() == "doc" && index + 1 < children.len() {
+                            *offset += 1;
+                        }
+                    }
+                    Node::new_block(node.type_name(), next_children)
+                }
             }
         }
 
@@ -616,13 +648,25 @@ mod tests {
     }
 
     #[test]
+    fn test_plain_text_round_trip() {
+        let doc = Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
+
+        assert_eq!(doc.plain_text(), "Hello\nWorld");
+        assert_eq!(doc.plain_text_len(), 11);
+
+        let updated = doc.with_plain_text("Hi\nRust");
+        assert_eq!(updated.paragraph_texts(), vec!["Hi".to_string(), "Rust".to_string()]);
+    }
+
+    #[test]
     fn test_paragraph_helpers() {
         let doc = Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
 
         assert_eq!(doc.paragraph_texts(), vec!["Hello".to_string(), "World".to_string()]);
         assert_eq!(doc.paragraph_at(0), Some((0, 0)));
         assert_eq!(doc.paragraph_at(5), Some((0, 5)));
-        assert_eq!(doc.paragraph_at(6), Some((1, 1)));
+        assert_eq!(doc.paragraph_at(6), Some((1, 0)));
+        assert_eq!(doc.paragraph_at(7), Some((1, 1)));
     }
 
     #[test]

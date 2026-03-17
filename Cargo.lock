@@ -92,10 +92,12 @@ dependencies = [
 name = "runtime"
 version = "0.1.0"
 dependencies = [
+ "commands",
  "model",
  "serde",
  "serde_json",
  "state",
+ "transform",
 ]
 
 [[package]]

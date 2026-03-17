@@ -81,6 +81,7 @@ pub enum EditorEvent {
 
 - Full plain-text document contents.
 - Newlines are represented as `\n`.
+- In the current internal model, each `\n` corresponds to a paragraph boundary in the document tree.
 - Included for debugging, clipboard-style integrations, and shell inspection.
 
 `selection_anchor`
@@ -150,6 +151,9 @@ May evolve after v1:
 - richer run metadata
 - scroll metrics
 - richer caret and selection metadata
+
+Internally, runtime layout is now expected to flow through explicit layout services
+such as text layout and hit-test results, rather than ad hoc helper chains.
 
 Shells should ignore unknown future fields when consuming JSON snapshots.
 

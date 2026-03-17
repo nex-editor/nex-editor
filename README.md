@@ -44,3 +44,12 @@ Not in the current milestone:
 
 The current shell/runtime contract is documented in
 `docs/protocol-v1.md`.
+
+The current practical execution flow is documented in
+`docs/current-flow-v1.md`.
+
+The planned ProseMirror-inspired internal core model is documented in
+`docs/internal-model-v1.md`.
+
+Short-term architectural guardrails for the minimal editor milestone are documented in
+`docs/architecture-constraints-v1.md`.
