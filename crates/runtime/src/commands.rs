@@ -1,4 +1,4 @@
-use commands::{BaseCommands, base::BaseCommandsImpl};
+use commands::{base::BaseCommandsImpl, BaseCommands};
 
 pub(crate) fn base_commands() -> BaseCommandsImpl {
     BaseCommandsImpl::new()

@@ -6,11 +6,13 @@ The stable shell contract is:
 
 - editor events into Rust
 - render snapshots out of Rust
+- shells should prefer render-facing scene data over reconstructing paint state
 
 Current default boundary:
 
 - `EditorRuntime`
 - `RenderSnapshot`
+- `SceneSnapshot`
 - `EditorEvent`
 
 The formal v1 contract should be documented in `docs/protocol-v1.md`.
@@ -19,7 +21,13 @@ When changing any field meaning or command behavior, update the code and the pro
 ## Shell Rules
 
 - Rust owns editing, layout, hit testing, selection geometry, and caret geometry.
-- Shells draw the provided snapshot and forward native input events.
+- Rust also owns render-facing scene construction.
+- Rust should emit a render-facing style table and fragment style ids; shells should map semantic style roles to native theme values.
+- Shells should provide measured text metrics for the active font environment, including ascent/descent.
+- Shells should also provide incremental grapheme advances keyed by render style identity.
+- Rust should consume those measurements but keep layout ownership.
+- For the current minimal editor, offsets should be treated as canonical plain-text character offsets, not UTF-8 byte offsets.
+- Shells draw the provided scene and forward native input events.
 - Shells should not inspect internal document nodes or recompute line wrapping when the snapshot already contains enough information.
 - Keep the first shell protocol easy to debug. JSON is acceptable before binary transport is justified.
 

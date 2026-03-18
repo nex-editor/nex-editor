@@ -184,9 +184,11 @@ impl Step for ReplaceStep {
         let doc_text = doc.plain_text();
         let insert_text: String = self.slice.content.iter().map(Node::text_content).collect();
         let mut next_text = String::with_capacity(doc_text.len() - (self.to - self.from) + insert_text.len());
-        next_text.push_str(&doc_text[..self.from]);
+        let from_byte = Node::char_to_byte_index(&doc_text, self.from);
+        let to_byte = Node::char_to_byte_index(&doc_text, self.to);
+        next_text.push_str(&doc_text[..from_byte]);
         next_text.push_str(&insert_text);
-        next_text.push_str(&doc_text[self.to..]);
+        next_text.push_str(&doc_text[to_byte..]);
 
         let new_doc = doc.with_plain_text(next_text);
         let slice = if self.slice.is_empty() { None } else { Some(self.slice.clone()) };
@@ -214,7 +216,9 @@ impl Mappable for ReplaceStep {
 impl Invertible for ReplaceStep {
     fn invert(&self, doc: &Node) -> Self {
         let plain_text = doc.plain_text();
-        let deleted_text = &plain_text[self.from..self.to];
+        let from_byte = Node::char_to_byte_index(&plain_text, self.from);
+        let to_byte = Node::char_to_byte_index(&plain_text, self.to);
+        let deleted_text = &plain_text[from_byte..to_byte];
         let deleted_slice = if deleted_text.is_empty() {
             Slice::empty()
         } else {
@@ -236,8 +240,9 @@ impl Step for SplitBlockStep {
             .cloned()
             .ok_or(StepError::PositionOutOfRange(self.pos))?;
 
-        let left = current[..offset].to_string();
-        let right = current[offset..].to_string();
+        let split_byte = Node::char_to_byte_index(&current, offset);
+        let left = current[..split_byte].to_string();
+        let right = current[split_byte..].to_string();
 
         paragraphs.splice(index..=index, [left, right]);
 
@@ -261,7 +266,7 @@ impl Step for JoinBackwardStep {
                 index = Some(i);
                 break;
             }
-            start += paragraph.len() + 1;
+            start += Node::char_len(paragraph) + 1;
         }
 
         let index = index.ok_or_else(|| {

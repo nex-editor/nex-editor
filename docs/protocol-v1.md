@@ -31,8 +31,13 @@ Protocol v1 does not define:
 - pagination
 - collaborative editing
 - undo/redo
-- IME/composition semantics
 - binary transport
+
+Current implementation note:
+
+- the browser playground now forwards composition lifecycle events
+- Rust holds explicit composition preview state
+- committed document text still changes only on commit
 
 ## Runtime Boundary
 
@@ -46,12 +51,15 @@ Current Rust types:
 ```rust
 pub struct RenderSnapshot {
     pub text: String,
+    pub display_text: String,
     pub selection_anchor: usize,
     pub selection_head: usize,
     pub revision: u64,
+    pub composition: Option<CompositionSnapshot>,
     pub viewport: Viewport,
     pub content_width: f32,
     pub content_height: f32,
+    pub scene: SceneSnapshot,
     pub lines: Vec<LineLayout>,
     pub selection_rects: Vec<SelectionRect>,
     pub caret: Option<CaretLayout>,
@@ -59,6 +67,12 @@ pub struct RenderSnapshot {
 
 pub enum EditorEvent {
     ResizeViewport { width: f32, height: f32, device_pixel_ratio: f32 },
+    SetTextMetrics { font_family: String, font_size_px: f32, char_width: f32, line_height: f32, caret_width: f32, ascent: f32, descent: f32 },
+    SetTextMeasurements { entries: Vec<TextMeasurementEntry> },
+    CompositionStart,
+    CompositionUpdate { text: String },
+    CompositionEnd { text: String },
+    CompositionCancel,
     PointerDown { x: f32, y: f32, button: PointerButton, modifiers: Modifiers, click_count: u8 },
     PointerMove { x: f32, y: f32, modifiers: Modifiers },
     PointerUp { x: f32, y: f32, button: PointerButton, modifiers: Modifiers },
@@ -75,6 +89,11 @@ pub enum EditorEvent {
 
 ## `RenderSnapshot`
 
+The product boundary still returns `RenderSnapshot`, but shell rendering should
+now primarily consume `scene`.
+
+See [Render Protocol V1](/Users/jc/Desktop/JC/nex-editor/docs/render-protocol-v1.md).
+
 ### Fields
 
 `text`
@@ -84,21 +103,37 @@ pub enum EditorEvent {
 - In the current internal model, each `\n` corresponds to a paragraph boundary in the document tree.
 - Included for debugging, clipboard-style integrations, and shell inspection.
 
+`display_text`
+
+- Current visible text projection used for layout and painting.
+- During normal editing it matches `text`.
+- During IME composition it includes preedit text that is not yet committed to the document.
+- Shell renderers should treat this as the authoritative visible string for the current frame.
+
 `selection_anchor`
 
 - One end of the current selection.
 - When equal to `selection_head`, the selection is collapsed and represents the caret.
+- Offsets are expressed in canonical plain-text character positions, not UTF-8 byte offsets.
 
 `selection_head`
 
 - The active end of the current selection.
 - Shells may use `min(anchor, head)` and `max(anchor, head)` to render the selected range.
+- Uses the same character-offset coordinate system as `selection_anchor`.
 
 `revision`
 
 - Monotonic counter incremented only when document text changes.
 - Selection-only changes do not increment it.
 - Intended for shell cache invalidation and debugging, not as a globally unique version id.
+
+`composition`
+
+- Current composition/preedit range owned by Rust.
+- `null` when no composition session is active.
+- The current implementation exposes `{ from, to, text }`.
+- Stable direction in v1; field shape may grow if shells later need richer IME metadata.
 
 `viewport`
 
@@ -115,10 +150,18 @@ pub enum EditorEvent {
 - Height of the laid out content in shell coordinate space.
 - Intended for shell scroll containers and viewport decisions.
 
+`scene`
+
+- Explicit render-facing scene derived by Rust.
+- Shells should prefer this over reconstructing a scene from compatibility fields.
+- Includes a style table, background rects, selection rects, text runs, and caret geometry.
+- Stable direction in v1.
+
 `lines`
 
 - Ordered layout lines with positioned runs.
-- Shells should render these directly and must not recompute wrapping.
+- Retained for debugging and migration.
+- Shells should not treat this as the preferred long-term drawing API.
 
 `selection_rects`
 
@@ -131,8 +174,8 @@ pub enum EditorEvent {
 
 ### Invariants
 
-- `selection_anchor <= text.len()`
-- `selection_head <= text.len()`
+- `selection_anchor <= text.chars().count()`
+- `selection_head <= text.chars().count()`
 - `revision` is non-decreasing for a single runtime instance
 - line, selection, and caret geometry are internally consistent and ready to render as-is
 
@@ -143,6 +186,7 @@ Stable in v1:
 - field names
 - field meanings
 - newline encoding as `\n`
+- selection and caret offsets are plain-text character offsets
 - revision behavior for text edits vs. selection-only changes
 - shells do not perform their own hit testing or line wrapping
 
@@ -170,6 +214,64 @@ Behavior:
 - does not increment `revision`
 
 Stable in v1.
+
+### `SetTextMetrics { font_family, font_size_px, char_width, line_height, caret_width, ascent, descent }`
+
+Update the text measurement facts supplied by the shell.
+
+Behavior:
+
+- shell measures the active render font environment
+- shell provides ascent/descent so Rust can compute baseline-based vertical geometry
+- Rust updates layout inputs from those measured values
+- Rust still owns line wrapping, hit testing, selection geometry, and caret geometry
+- does not modify text
+- does not increment `revision`
+
+Stable direction in v1.
+
+### `SetTextMeasurements { entries }`
+
+Update cached text advances supplied by the shell.
+
+Each entry currently contains:
+
+- `style_key`: shell measurement style identity
+- `text`: a measured grapheme cluster
+- `advance`: measured horizontal advance in shell coordinate space
+
+Behavior:
+
+- shell measures text using the active platform font stack for the referenced style
+- shell may send entries incrementally as new grapheme clusters appear
+- Rust caches those advances by `style_key`
+- Rust still owns line wrapping, hit testing, caret geometry, and selection geometry
+- does not modify text
+- does not increment `revision`
+
+Stable in v1:
+
+- event name
+- `style_key + text -> advance` cache model
+- `text` is expected to be a user-visible grapheme cluster, not a UTF-8 byte slice
+
+May evolve after v1:
+
+- richer style descriptors
+- shaped cluster ids
+- vertical metrics attached to style keys
+
+### `CompositionStart / CompositionUpdate / CompositionEnd / CompositionCancel`
+
+Drive IME/preedit state from the shell into Rust.
+
+Behavior:
+
+- shell forwards composition lifecycle events from the platform input host
+- Rust owns composition preview state
+- preview text may appear in `display_text` and render scene output before commit
+- committed document text changes only on `CompositionEnd`
+- `revision` increments only when committed text changes
 
 ### `PointerDown / PointerMove / PointerUp`
 
@@ -205,6 +307,7 @@ Behavior:
 
 - if selection is non-collapsed, delete the selected range
 - otherwise delete the code unit immediately before the caret
+- otherwise delete the previous plain-text character
 - if already at offset `0`, no-op
 - collapses selection at the deletion point
 - increments `revision` only if text changed

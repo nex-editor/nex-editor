@@ -24,14 +24,15 @@ The current minimal editor should be understood as this pipeline:
 5. `commands` build `Transaction`s over `EditorState`
 6. `Transaction::commit()` produces the next `EditorState`
 7. `runtime` derives `TextLayout`
-8. `runtime` builds `RenderSnapshot`
-9. shell draws the snapshot
+8. `runtime` builds render-facing `SceneSnapshot`
+9. `runtime` packages `RenderSnapshot`
+10. shell draws the snapshot
 
 Practical interpretation:
 
 - document truth lives in `model` and `state`
 - editing semantics should keep moving into `commands`
-- `runtime` should orchestrate event routing, pointer handling, layout-aware navigation, layout, and snapshots
+- `runtime` should orchestrate event routing, pointer handling, layout-aware navigation, layout, scene construction, and snapshots
 - `wasm` should stay a bridge, not a behavior layer
 
 ## Design Defaults

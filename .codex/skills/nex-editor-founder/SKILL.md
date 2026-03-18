@@ -29,6 +29,7 @@ Treat `nex-editor` as a headless editor engine with thin platform shells. Optimi
 - Commands mutate state; snapshots are read-only render/input data.
 - If a feature is not implemented, return a no-op or explicit failure. Never fake success.
 - For browser work, avoid `contenteditable` as the source of truth.
+- For end-to-end tests, prefer shared hooks/harness helpers over ad hoc event plumbing inside each spec.
 
 ## Working Loop
 

@@ -216,6 +216,17 @@ impl<'de> serde::Deserialize<'de> for Node {
 }
 
 impl Node {
+    pub fn char_to_byte_index(text: &str, char_index: usize) -> usize {
+        text.char_indices()
+            .nth(char_index)
+            .map(|(byte_index, _)| byte_index)
+            .unwrap_or(text.len())
+    }
+
+    pub fn char_len(text: &str) -> usize {
+        text.chars().count()
+    }
+
     /// Create a new block node
     pub fn new_block(block_type: impl Into<String>, content: Vec<Node>) -> Self {
         let block_type_str = block_type.into();
@@ -327,7 +338,7 @@ impl Node {
 
     /// Return the length of the canonical plain-text view.
     pub fn plain_text_len(&self) -> usize {
-        self.plain_text().len()
+        Self::char_len(&self.plain_text())
     }
 
     /// Return a copy of this node tree with its plain-text content replaced.
@@ -391,7 +402,7 @@ impl Node {
         let mut start = 0;
 
         for (index, paragraph) in paragraphs.iter().enumerate() {
-            let end = start + paragraph.len();
+            let end = start + Self::char_len(paragraph);
             if pos <= end {
                 return Some((index, pos.saturating_sub(start)));
             }
@@ -401,7 +412,7 @@ impl Node {
         paragraphs
             .len()
             .checked_sub(1)
-            .map(|last| (last, paragraphs[last].len()))
+            .map(|last| (last, Self::char_len(&paragraphs[last])))
     }
 
     /// Rebuild a document from paragraph texts using the minimal schema.
@@ -427,7 +438,7 @@ impl Node {
             match &node.content {
                 NodeContent::Text(tc) => {
                     let start = *offset;
-                    let end = start + tc.text.len();
+                    let end = start + Node::char_len(&tc.text);
                     *offset = end;
 
                     if to <= start || from >= end {
@@ -477,7 +488,7 @@ impl Node {
                 ContentSize::new(total_size, total_content)
             }
             NodeContent::Text(tc) => {
-                let size = tc.text.len();
+                let size = Self::char_len(&tc.text);
                 ContentSize::new(size, size)
             }
         }
@@ -659,6 +670,15 @@ mod tests {
     }
 
     #[test]
+    fn test_plain_text_len_counts_characters() {
+        let doc = Node::from_paragraph_texts(vec!["你a".to_string(), "界".to_string()]);
+
+        assert_eq!(doc.plain_text(), "你a\n界");
+        assert_eq!(doc.plain_text_len(), 4);
+        assert_eq!(Node::char_to_byte_index(&doc.plain_text(), 1), "你".len());
+    }
+
+    #[test]
     fn test_paragraph_helpers() {
         let doc = Node::from_paragraph_texts(vec!["Hello".to_string(), "World".to_string()]);
 
@@ -667,6 +687,17 @@ mod tests {
         assert_eq!(doc.paragraph_at(5), Some((0, 5)));
         assert_eq!(doc.paragraph_at(6), Some((1, 0)));
         assert_eq!(doc.paragraph_at(7), Some((1, 1)));
+    }
+
+    #[test]
+    fn test_paragraph_at_uses_character_offsets() {
+        let doc = Node::from_paragraph_texts(vec!["你a".to_string(), "界".to_string()]);
+
+        assert_eq!(doc.paragraph_at(0), Some((0, 0)));
+        assert_eq!(doc.paragraph_at(1), Some((0, 1)));
+        assert_eq!(doc.paragraph_at(2), Some((0, 2)));
+        assert_eq!(doc.paragraph_at(3), Some((1, 0)));
+        assert_eq!(doc.paragraph_at(4), Some((1, 1)));
     }
 
     #[test]

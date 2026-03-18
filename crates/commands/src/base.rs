@@ -3,6 +3,7 @@
 //! Implements fundamental editor operations like join, split, delete, etc.
 
 use state::{EditorState, Transaction};
+use model::Node;
 
 /// Base commands trait
 pub trait BaseCommands {
@@ -77,7 +78,7 @@ impl BaseCommands for BaseCommandsImpl {
         let (from, to) = helpers::get_selection_range(state);
         let mut tr = Transaction::new(state.clone());
         tr.replace(from, to, transform::Slice::from_text(text))
-            .set_cursor(from + text.len());
+            .set_cursor(from + Node::char_len(text));
         tr
     }
 
@@ -191,7 +192,7 @@ impl BaseCommands for BaseCommandsImpl {
 /// Helper functions for command implementations
 pub mod helpers {
     use state::{EditorState, Transaction};
-    use model::ResolvedPos;
+    use model::{Node, ResolvedPos};
 
     /// Get the selection range as (from, to)
     pub fn get_selection_range(state: &EditorState) -> (usize, usize) {
@@ -238,7 +239,7 @@ pub mod helpers {
         let pos = get_cursor(state);
         let mut tr = Transaction::new(state.clone());
         tr.insert_text(pos, text)
-            .set_cursor(pos + text.len() - cursor_offset);
+            .set_cursor(pos + Node::char_len(text).saturating_sub(cursor_offset));
         tr
     }
 }

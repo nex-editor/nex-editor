@@ -19,6 +19,38 @@ export const viewportEvent = (
   },
 });
 
+export const textMetricsEvent = (metrics: {
+  font_family: string;
+  font_size_px: number;
+  char_width: number;
+  line_height: number;
+  caret_width: number;
+  ascent: number;
+  descent: number;
+}) => ({
+  SetTextMetrics: metrics,
+});
+
+export const textMeasurementsEvent = (entries: {
+  style_key: string;
+  text: string;
+  advance: number;
+}[]) => ({
+  SetTextMeasurements: { entries },
+});
+
+export const compositionStartEvent = () => "CompositionStart";
+
+export const compositionUpdateEvent = (text: string) => ({
+  CompositionUpdate: { text },
+});
+
+export const compositionEndEvent = (text: string) => ({
+  CompositionEnd: { text },
+});
+
+export const compositionCancelEvent = () => "CompositionCancel";
+
 export const pointerDownEvent = (
   event: MouseEvent,
   rect: DOMRect,
@@ -56,6 +88,10 @@ export const pointerUpEvent = (
 });
 
 export const keyEvent = (event: KeyboardEvent): unknown | null => {
+  if (event.isComposing || event.key === "Process") {
+    return null;
+  }
+
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "a") {
     return "SelectAll";
   }
@@ -74,17 +110,20 @@ export const keyEvent = (event: KeyboardEvent): unknown | null => {
     return mappedEvent;
   }
 
-  if (event.key === "Enter") {
-    return { InsertText: { text: "\n" } };
+  return null;
+};
+
+export const beforeInputEvent = (event: InputEvent): unknown | null => {
+  if (event.isComposing) {
+    return null;
   }
 
-  if (
-    event.key.length === 1 &&
-    !event.altKey &&
-    !event.metaKey &&
-    !event.ctrlKey
-  ) {
-    return { InsertText: { text: event.key } };
+  if (event.inputType === "insertText" && event.data) {
+    return { InsertText: { text: event.data } };
+  }
+
+  if (event.inputType === "insertLineBreak") {
+    return { InsertText: { text: "\n" } };
   }
 
   return null;

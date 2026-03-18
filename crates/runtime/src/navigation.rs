@@ -22,11 +22,8 @@ impl EditorRuntime {
 
         let current_line = &text_layout.lines[current_line_index];
         let target_line = &text_layout.lines[target_line_index as usize];
-        let visual_column = offset.get().saturating_sub(current_line.start);
-        let next = FlatTextOffset::new(
-            target_line.start
-                + visual_column.min(target_line.end.saturating_sub(target_line.start)),
-        );
+        let target_x = self.x_for_offset_in_line(current_line, offset.get());
+        let next = FlatTextOffset::new(self.offset_for_line_x(target_line, target_x));
         self.set_selection(next, next);
     }
 }

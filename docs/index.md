@@ -10,8 +10,8 @@ hero:
       text: Current Flow
       link: /current-flow-v1
     - theme: alt
-      text: Constraints
-      link: /architecture-constraints-v1
+      text: Render Protocol
+      link: /render-protocol-v1
 
 features:
   - title: Simple Plain Text First

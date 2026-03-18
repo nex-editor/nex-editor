@@ -16,7 +16,7 @@ body {
 }
 
 #app {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 32px 20px 48px;
 }
@@ -58,7 +58,20 @@ body {
 }
 
 .canvas-wrap {
+  position: relative;
   padding: 0 24px 24px;
+}
+
+.ime-proxy {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  resize: none;
 }
 
 canvas {
@@ -73,4 +86,84 @@ canvas {
   padding: 0 24px 24px;
   color: #64748b;
   font-size: 13px;
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.debug-panel {
+  min-height: 360px;
+}
+
+.debug-header {
+  padding: 20px 24px 12px;
+}
+
+.debug-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.debug-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.debug-pre,
+.log-list {
+  margin: 0;
+  padding: 0 24px 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.debug-pre {
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #0f172a;
+}
+
+.log-list {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.log-entry,
+.log-empty {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.log-entry {
+  display: grid;
+  gap: 6px;
+}
+
+.log-id {
+  color: #0ea5e9;
+}
+
+.log-message {
+  color: #0f172a;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log-empty {
+  color: #64748b;
+}
+
+@media (max-width: 960px) {
+  .debug-grid {
+    grid-template-columns: 1fr;
+  }
 }

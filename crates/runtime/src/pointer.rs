@@ -1,16 +1,12 @@
 use super::*;
 
 impl EditorRuntime {
-    pub(crate) fn pointer_down(
-        &mut self,
-        x: f32,
-        y: f32,
-        button: PointerButton,
-    ) {
+    pub(crate) fn pointer_down(&mut self, x: f32, y: f32, button: PointerButton) {
         if button != PointerButton::Primary {
             return;
         }
 
+        self.cancel_composition();
         let text_layout = self.text_layout(&self.state.doc().plain_text());
         let hit = self.hit_test(&text_layout, x, y);
         self.pointer_anchor = Some(hit.offset);

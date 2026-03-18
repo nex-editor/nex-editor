@@ -24,8 +24,12 @@ The current browser flow is:
 8. `Transaction::commit()` produces the next `EditorState`
 9. runtime derives `TextLayout`
 10. runtime builds `RenderSnapshot`
-11. WASM returns JSON snapshot
-12. browser shell renders the snapshot on canvas
+11. runtime packages a render-facing `scene` for shells
+12. WASM returns JSON snapshot
+13. browser shell renders the snapshot on canvas
+14. browser shell measures missing grapheme advances for the active text style
+15. browser shell sends `SetTextMeasurements`
+16. Rust reflows layout with the cached advances
 
 ## Runtime Flow
 
@@ -57,7 +61,8 @@ The main data transitions are:
 2. `Transaction`
 3. `EditorState`
 4. `TextLayout`
-5. `RenderSnapshot`
+5. `SceneSnapshot`
+6. `RenderSnapshot`
 
 This means:
 
@@ -74,11 +79,17 @@ The current web playground shell is organized like this:
   - expose `canvas`, `status`, `revision`
 - [input.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/input.ts)
   - map browser input to protocol events
+- [metrics.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/metrics.ts)
+  - measure active browser font metrics
+  - cache grapheme advances keyed by `style_key`
 - [bridge.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/bridge.ts)
   - initialize WASM bridge
-  - exchange JSON events and snapshots
+  - exchange JSON render snapshots and debug snapshots
+- [debug.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/debug.ts)
+  - render shell-local debugging panels
+  - show serialized Rust document JSON and recent operation logs
 - [renderer.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/renderer.ts)
-  - draw `RenderSnapshot` to canvas
+  - draw `snapshot.scene` to canvas
 - [status.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/status.ts)
   - format debug/status output
 - [main.ts](/Users/jc/Desktop/JC/nex-editor/apps/web-playground/src/main.ts)
@@ -95,14 +106,20 @@ Rust owns:
 - hit testing
 - caret geometry
 - selection geometry
+- render-facing scene construction
 
 Shell owns:
 
 - focus
 - native pointer events
 - native keyboard events
+- native text measurement
 - canvas drawing
-- shell-local debug UI
+- shell-local operation logging
+- debug panel rendering
+
+Rust also exposes a development-only debug snapshot so shells can inspect the
+current document tree without becoming responsible for editor logic.
 
 ## Current Simplifications
 
@@ -110,7 +127,8 @@ The current flow intentionally assumes:
 
 - minimal document schema: `doc -> paragraph -> text`
 - plain-text projection joins paragraphs with `\n`
-- layout is fixed-metric and monospace-oriented
+- text offsets are canonical plain-text character offsets
+- line layout is Rust-owned, but shell-supplied text measurement can refine per-grapheme advances
 - browser transport uses JSON through WASM bindings
 
 These are current implementation constraints, not permanent product claims.

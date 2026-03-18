@@ -6,6 +6,7 @@ edition.workspace = true
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
+unicode-segmentation = { workspace = true }
 model = { path = "../model" }
 state = { path = "../state" }
 transform = { path = "../transform" }

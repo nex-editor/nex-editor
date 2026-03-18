@@ -1,96 +1,190 @@
 import { expect, test } from "@playwright/test";
 
-const paddingX = 24;
-const lineY = 30;
-const charWidth = 9.6;
+import { createPlaygroundHarness } from "./hooks";
+
+test.beforeEach(async ({ page }) => {
+  const playground = createPlaygroundHarness(page);
+  await playground.open();
+  await playground.expectReady();
+});
 
 test("canvas editor accepts typing and deletion", async ({ page }) => {
-  await page.goto("/");
+  const playground = createPlaygroundHarness(page);
 
-  const status = page.locator("#status");
-  const revision = page.locator("#revision");
-  const canvas = page.locator("#editor");
+  await expect(playground.docJson).toContainText('"block_type": "doc"');
 
-  await expect(status).toContainText("text length: 0", { timeout: 15_000 });
-
-  await canvas.click();
+  await playground.focusEditor();
   await page.keyboard.type("hello");
 
-  await expect(status).toContainText("text length: 5");
-  await expect(revision).toContainText("revision: 5");
+  await expect(playground.status).toContainText("text length: 5");
+  await expect(playground.revision).toContainText("revision: 5");
+  await expect(playground.docJson).toContainText('"text": "hello"');
+  await expect(playground.operationLog).toContainText(
+    'InsertText {"text":"o"}',
+  );
+  await expect(playground.operationLog).toContainText("revision=5");
 
   await page.keyboard.press("Backspace");
-  await expect(status).toContainText("text length: 4");
+  await expect(playground.status).toContainText("text length: 4");
+  await expect(playground.operationLog).toContainText("Backspace");
 
-  await page.keyboard.press(`${process.platform === "darwin" ? "Meta" : "Control"}+A`);
-  await expect(status).toContainText("selection: 0 → 4");
+  await page.keyboard.press(
+    `${process.platform === "darwin" ? "Meta" : "Control"}+A`,
+  );
+  await expect(playground.status).toContainText("selection: 0 → 4");
 
   await page.keyboard.type("X");
-  await expect(status).toContainText("text length: 1");
-  await expect(status).toContainText("selection: 1 → 1");
+  await expect(playground.status).toContainText("text length: 1");
+  await expect(playground.status).toContainText("selection: 1 → 1");
+  await expect(playground.docJson).toContainText('"text": "X"');
+});
+
+test("render snapshot exposes style table and style ids", async ({ page }) => {
+  const playground = createPlaygroundHarness(page);
+  const snapshot = await playground.snapshot<{
+    scene?: {
+      styles?: Array<{ id?: string; role?: string; measurement_style_key?: string | null }>;
+      background?: Array<{ style_id?: string }>;
+    };
+  }>();
+
+  expect(snapshot?.scene?.styles).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "surface",
+        role: "EditorSurface",
+        measurement_style_key: null,
+      }),
+      expect.objectContaining({
+        id: "text.primary",
+        role: "PrimaryText",
+        measurement_style_key: "text.primary",
+      }),
+    ]),
+  );
+  expect(snapshot?.scene?.background?.[0]?.style_id).toBe("surface");
+});
+
+test("canvas editor exposes composition preview before commit", async ({
+  page,
+}) => {
+  const playground = createPlaygroundHarness(page);
+
+  await playground.focusEditor();
+  await playground.compositionStart();
+  await playground.compositionUpdate("你");
+
+  await expect(playground.status).toContainText('composition: "你"');
+  await expect(playground.status).toContainText('text: ""');
+  await expect(playground.status).toContainText('display: "你"');
+
+  const snapshot = await playground.snapshot<{
+    scene?: { composition_underlines?: unknown[] };
+  }>();
+  expect(snapshot?.scene?.composition_underlines?.length).toBe(1);
+
+  await playground.compositionEnd("你");
+  await expect(playground.status).toContainText("composition: idle");
+  await expect(playground.status).toContainText('text: "你"');
+});
+
+test("canvas editor supports committed Chinese text input and deletion", async ({
+  page,
+}) => {
+  const playground = createPlaygroundHarness(page);
+
+  await playground.focusEditor();
+  await playground.compositionStart();
+  await playground.compositionUpdate("你好");
+  await playground.compositionEnd("你好");
+
+  await expect(playground.status).toContainText('text: "你好"');
+  await expect(playground.status).toContainText("selection: 2 → 2");
+
+  await page.keyboard.press("ArrowLeft");
+  await expect(playground.status).toContainText("selection: 1 → 1");
+
+  await page.keyboard.press("Backspace");
+  await expect(playground.status).toContainText('text: "好"');
+  await expect(playground.status).toContainText("selection: 0 → 0");
+});
+
+test("canvas editor moves ime host with caret geometry", async ({ page }) => {
+  const playground = createPlaygroundHarness(page);
+
+  await playground.focusEditor();
+  await page.keyboard.type("hello");
+
+  const before = await playground.inputProxy.evaluate((node) => ({
+    left: node.style.left,
+    top: node.style.top,
+    height: node.style.height,
+  }));
+
+  await playground.clickAtColumn(1.2);
+
+  const after = await playground.inputProxy.evaluate((node) => ({
+    left: node.style.left,
+    top: node.style.top,
+    height: node.style.height,
+  }));
+
+  expect(before.left).not.toBe(after.left);
+  expect(after.height).not.toBe("1px");
+});
+
+test("canvas editor cancels composition without committing text", async ({
+  page,
+}) => {
+  const playground = createPlaygroundHarness(page);
+
+  await playground.focusEditor();
+  await playground.compositionStart();
+  await playground.compositionUpdate("你");
+
+  await expect(playground.status).toContainText('composition: "你"');
+  await expect(playground.status).toContainText('display: "你"');
+
+  await playground.compositionCancel();
+  await expect(playground.status).toContainText("composition: idle");
+  await expect(playground.status).toContainText('text: ""');
+  await expect(playground.status).toContainText('display: ""');
 });
 
 test("canvas editor supports multiline vertical movement", async ({ page }) => {
-  await page.goto("/");
+  const playground = createPlaygroundHarness(page);
 
-  const status = page.locator("#status");
-  const canvas = page.locator("#editor");
-
-  await expect(status).toContainText("text length: 0", { timeout: 15_000 });
-
-  await canvas.click();
+  await playground.focusEditor();
   await page.keyboard.type("abc");
   await page.keyboard.press("Enter");
   await page.keyboard.type("def");
 
-  await expect(status).toContainText("selection: 7 → 7");
+  await expect(playground.status).toContainText("selection: 7 → 7");
 
   await page.keyboard.press("ArrowUp");
-  await expect(status).toContainText("selection: 3 → 3");
+  await expect(playground.status).toContainText("selection: 3 → 3");
 
   await page.keyboard.press("ArrowDown");
-  await expect(status).toContainText("selection: 7 → 7");
+  await expect(playground.status).toContainText("selection: 7 → 7");
 });
 
-test("canvas editor supports pointer placement and drag selection", async ({ page }) => {
-  await page.goto("/");
+test("canvas editor supports pointer placement and drag selection", async ({
+  page,
+}) => {
+  const playground = createPlaygroundHarness(page);
 
-  const status = page.locator("#status");
-  const canvas = page.locator("#editor");
-
-  await expect(status).toContainText("text length: 0", { timeout: 15_000 });
-
-  await canvas.click();
+  await playground.focusEditor();
   await page.keyboard.type("hello");
-  await expect(status).toContainText('text: "hello"');
+  await expect(playground.status).toContainText('text: "hello"');
 
-  const box = await canvas.boundingBox();
-  if (!box) {
-    throw new Error("Canvas bounding box unavailable");
-  }
+  await playground.clickAtColumn(1.2);
+  await expect(playground.status).toContainText("selection: 1 → 1");
 
-  await page.mouse.click(
-    box.x + paddingX + charWidth * 1.2,
-    box.y + lineY,
-  );
-  await expect(status).toContainText("selection: 1 → 1");
-
-  await page.mouse.move(
-    box.x + paddingX + charWidth * 0.2,
-    box.y + lineY,
-  );
-  await page.mouse.down();
-  await page.mouse.move(
-    box.x + paddingX + charWidth * 4.2,
-    box.y + lineY,
-    { steps: 5 },
-  );
-  await page.mouse.up();
-
-  await expect(status).toContainText("selection: 0 → 4");
+  await playground.dragAcrossColumns(0.2, 4.2);
+  await expect(playground.status).toContainText("selection: 0 → 4");
 
   await page.keyboard.type("X");
-  await expect(status).toContainText("text length: 2");
-  await expect(status).toContainText('text: "Xo"');
-  await expect(status).toContainText("selection: 1 → 1");
+  await expect(playground.status).toContainText("text length: 2");
+  await expect(playground.status).toContainText('text: "Xo"');
+  await expect(playground.status).toContainText("selection: 1 → 1");
 });
